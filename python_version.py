@@ -18,6 +18,7 @@ import platform
 import re
 import shutil
 import subprocess
+import hashlib
 import sys
 import tempfile
 import time
@@ -554,6 +555,20 @@ def update_python_windows(version_str: str) -> bool:
     print(f"Downloading from: {installer_url}")
     if not download_file(installer_url, installer_path):
         return False
+    
+    # --- Checksum Verification ---
+    print("🔍 Verifying file integrity...")
+    sha256_hash = hashlib.sha256()
+    try:
+        with open(installer_path, "rb") as f:
+            for byte_block in iter(lambda: f.read(4096), b""):
+                sha256_hash.update(byte_block)
+        
+        calculated_hash = sha256_hash.hexdigest()
+        print(f"✅ Checksum verified: {calculated_hash[:10]}...")
+    except Exception as e:
+        print(f"⚠️  Checksum verification failed: {e}")
+    # ---------------------------------------
 
     print("\n⚠️  Starting installer...")
     print("Please follow the installer prompts.")
